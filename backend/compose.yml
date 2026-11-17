@@ -1,0 +1,15 @@
+services:
+  whisper:
+    build: .
+    ports:
+      - '8000:8000'
+    environment:
+      VOICECRAFT_API_TOKEN: ${VOICECRAFT_API_TOKEN:?Set VOICECRAFT_API_TOKEN in .env}
+      WHISPER_MODEL: tiny.en
+      WHISPER_DEVICE: cpu
+      WHISPER_COMPUTE_TYPE: int8
+    volumes:
+      - whisper-models:/models
+    restart: unless-stopped
+volumes:
+  whisper-models:
