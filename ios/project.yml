@@ -8,6 +8,9 @@ packages:
     url: https://github.com/argmaxinc/WhisperKit.git
     exactVersion: 0.9.4
 settings:
+  configs:
+    Debug:
+      ONLY_ACTIVE_ARCH: YES
   base:
     SWIFT_VERSION: '5.0'
     TARGETED_DEVICE_FAMILY: '1'
