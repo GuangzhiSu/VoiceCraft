@@ -35,6 +35,11 @@
 	<string>VoiceCraft records your voice and saves audio alongside your transcript.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>VoiceCraft uses Apple Speech to show live English captions. Apple may process audio online when on-device recognition is unavailable.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchScreen</key>

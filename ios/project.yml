@@ -31,6 +31,8 @@ targets:
         NSMicrophoneUsageDescription: VoiceCraft records your voice and saves audio alongside your transcript.
         NSSpeechRecognitionUsageDescription: VoiceCraft uses Apple Speech to show live English captions. Apple may process audio online when on-device recognition is unavailable.
         NSLocalNetworkUsageDescription: Connect to your own Whisper server on your local network.
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSAppTransportSecurity:
