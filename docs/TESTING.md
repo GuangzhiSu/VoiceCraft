@@ -11,9 +11,12 @@
 | Swift parsing with the tree-sitter Swift grammar | All 12 Swift source/test files parsed without syntax errors |
 | Xcode project OpenStep parsing and referenced file existence | Passed; application and test targets present |
 | Property lists, privacy manifest, asset JSON, workflow/project YAML and shared scheme XML | Parsed successfully |
-| iOS compilation, XCTest execution, UI rendering and microphone/Core ML behavior | **Not run: this environment is Linux and has no Xcode or iPhone** |
+| iOS compilation and XCTest execution | **Passed: 4 tests, 0 failures** on GitHub Actions macOS / Xcode 16.4 / iOS 18.5 simulator |
+| Physical iPhone microphone, Apple Speech, WhisperKit model inference and visual/device QA | Not run; requires an iPhone |
 | Docker image build | Not run; Python runtime/inference was tested directly |
-| GitHub Actions run | Not run: repository write permissions were unavailable during delivery |
+| GitHub Actions | Backend and iOS jobs passed in [run 44017274184](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/44017274184), commit `aeef47f` |
+
+The initial iOS CI run exposed a mismatch between the app and Swift package simulator architectures. Debug builds now use the active architecture consistently; the subsequent build and all four XCTest cases passed. Commits were published through the authenticated `GuangzhiSu` account.
 
 The synthetic speech said: “Hello world. This is a test of the Voice Craft recording application.” The actual model returned: “Hello world, this is a test of the voicecraft recording application.” This validates the server path and model loading, not iPhone WhisperKit performance or general transcription accuracy.
 
@@ -31,7 +34,7 @@ The GitHub Actions workflow also exposes this real-model test as an optional man
 
 ## Required checks on a Mac / iPhone
 
-1. Open the checked-in project in Xcode 16+, resolve packages and build the VoiceCraft scheme. Run XCTest in an available iOS simulator. Fix any compiler/SDK errors before treating this as a verified iOS build.
+1. Open the checked-in project in Xcode 16+, resolve packages and build the VoiceCraft scheme. Run XCTest in an available iOS simulator. The checked-in project has passed the simulator build and four unit tests in CI; repeat locally when changing SDKs or dependencies.
 2. Select a development team and unique bundle ID; run on an iOS 17+ iPhone. No signing credentials are included.
 3. Grant microphone and speech permissions. Speak in English for 20 seconds with Apple Speech; confirm partial captions, timer and input level update.
 4. Record with Apple Speech for at least two minutes. Confirm transcription continues over the 45-second request rotations without obvious gaps/repeated sentences. Check sentence boundaries, pauses and silence.

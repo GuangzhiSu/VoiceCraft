@@ -111,7 +111,7 @@ xcodebuild test -project ios/VoiceCraft.xcodeproj -scheme VoiceCraft \
   -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO
 ```
 
-GitHub Actions 配置包括后端接口测试和 macOS 上的 iOS 编译/单元测试。当前交付环境为 Linux，已运行的检查与未运行的检查分开记录在 [docs/TESTING.md](docs/TESTING.md)。
+GitHub Actions 配置包括后端接口测试和 macOS 上的 iOS 编译/单元测试。本地环境为 Linux；另外已通过 GitHub Actions 的 macOS 环境完成 iOS 编译和 4 项单元测试。已运行的检查与真机待测项目分开记录在 [docs/TESTING.md](docs/TESTING.md)。
 
 ## 参考与许可
 
