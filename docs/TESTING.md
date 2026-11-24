@@ -12,6 +12,7 @@
 | Xcode project OpenStep parsing and referenced file existence | Passed; application and test targets present |
 | Property lists, privacy manifest, asset JSON, workflow/project YAML and shared scheme XML | Parsed successfully |
 | iOS compilation and XCTest execution | **Passed: 4 tests, 0 failures** on GitHub Actions macOS / Xcode 16.4 / iOS 18.5 simulator |
+| Release iPhone archive and unsigned SideStore IPA | **Passed** on GitHub Actions macOS / Xcode 16.4; arm64, iPhoneOS, minimum iOS 17.0, ZIP integrity, bundle ID and permission descriptions validated in [run 45336225279](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/45336225279), commit `3af4708` |
 | Physical iPhone microphone, Apple Speech, WhisperKit model inference and visual/device QA | Not run; requires an iPhone |
 | Docker image build | Not run; Python runtime/inference was tested directly |
 | GitHub Actions | Backend and iOS jobs passed in [run 44017274184](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/44017274184), commit `aeef47f` |

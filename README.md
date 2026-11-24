@@ -17,7 +17,9 @@
 
 ## Windows / 无 Mac：通过 SideStore 安装
 
-仓库提供 [Build iPhone IPA](../../actions/workflows/build-ipa.yml) 工作流，使用 GitHub 的 macOS runner 编译 **arm64 iPhone 真机版本**，不需要把 Apple 账户、证书或密码上传到 GitHub。
+**[下载已验证的 VoiceCraft 1.0.0 iPhone 安装包](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/45336225279/artifacts/14894460110)**（2026-11-24 构建；需登录 GitHub，下载外层 ZIP 后解压取得 IPA，artifact 保留至 2026-12-24）。[查看打包检查结果](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/45336225279)。
+
+仓库提供 [Build iPhone IPA](https://github.com/GuangzhiSu/VoiceCraft/actions/workflows/build-ipa.yml) 工作流，使用 GitHub 的 macOS runner 编译 **arm64 iPhone 真机版本**，不需要把 Apple 账户、证书或密码上传到 GitHub。
 
 1. 用浏览器登录 GitHub，打开仓库的 **Actions → Build iPhone IPA**。选择最近一次成功的运行；需要重新打包时，点击 **Run workflow → main → Run workflow**。推送 iOS 代码到 main 时也会自动打包。
 2. 在运行页面下方的 **Artifacts** 下载 **VoiceCraft-iPhone-IPA**（保留 30 天）。解压下载的 ZIP，取出 `VoiceCraft.ipa`；不要把外层 ZIP 当成 IPA 安装。
