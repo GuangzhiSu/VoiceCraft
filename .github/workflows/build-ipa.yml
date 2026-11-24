@@ -57,7 +57,7 @@ jobs:
           APP="$PWD/build/VoiceCraft.xcarchive/Products/Applications/VoiceCraft.app"
           test -d "$APP"
           plutil -lint "$APP/Info.plist"
-          xcrun lipo -verify_arch arm64 "$APP/VoiceCraft"
+          xcrun lipo "$APP/VoiceCraft" -verify_arch arm64
           xcrun vtool -show-build "$APP/VoiceCraft" | tee build/macho-platform.txt
           grep -Eq 'platform[[:space:]]+IOS[[:space:]]*$' build/macho-platform.txt
 
