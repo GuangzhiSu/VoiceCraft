@@ -17,22 +17,26 @@
 
 ## Windows / 无 Mac：通过 SideStore 安装
 
-**[下载已验证的 VoiceCraft 1.0.0 iPhone 安装包](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/45336225279/artifacts/14894460110)**（2026-11-24 构建；需登录 GitHub，下载外层 ZIP 后解压取得 IPA，artifact 保留至 2026-12-24）。[查看打包检查结果](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/45336225279)。
+**[直接下载 VoiceCraft.ipa](https://github.com/GuangzhiSu/VoiceCraft/releases/download/sideload-45336225279/VoiceCraft.ipa)** · [Release 页面](https://github.com/GuangzhiSu/VoiceCraft/releases/tag/sideload-45336225279) · [已通过的真机打包检查](https://github.com/GuangzhiSu/VoiceCraft/actions/runs/45336225279)
 
-仓库提供 [Build iPhone IPA](https://github.com/GuangzhiSu/VoiceCraft/actions/workflows/build-ipa.yml) 工作流，使用 GitHub 的 macOS runner 编译 **arm64 iPhone 真机版本**，不需要把 Apple 账户、证书或密码上传到 GitHub。
+这是 2026-11-24 构建的 VoiceCraft 1.0.0，适用于 iOS 17+。无需 Mac，也无需先下载或解压源码。公共 Release 下载无需登录 GitHub。
 
-1. 用浏览器登录 GitHub，打开仓库的 **Actions → Build iPhone IPA**。选择最近一次成功的运行；需要重新打包时，点击 **Run workflow → main → Run workflow**。推送 iOS 代码到 main 时也会自动打包。
-2. 在运行页面下方的 **Artifacts** 下载 **VoiceCraft-iPhone-IPA**（保留 30 天）。解压下载的 ZIP，取出 `VoiceCraft.ipa`；不要把外层 ZIP 当成 IPA 安装。
-3. 将 `VoiceCraft.ipa` 保存到 iPhone 的“文件”App。也可以直接用 iPhone Safari 登录 GitHub 下载并在“文件”中解压。
-4. iPhone 连上 Wi-Fi，连接 **LocalDevVPN**。打开 **SideStore → My Apps → +**，选择 IPA，等待 SideStore 使用你的 Apple 账户签名并安装。
-5. 如提示信任开发者，进入 **设置 → 通用 → VPN 与设备管理 → 开发者 App**，信任安装时使用的账户；如提示开发者模式，进入 **设置 → 隐私与安全性 → 开发者模式**，按提示重启并确认。
-6. 打开 VoiceCraft，允许麦克风权限；Apple Speech 模式还需要语音识别权限。本地 Whisper 首次需要联网下载模型，准备完成后可使用缓存模型离线转录。
+1. 在 iPhone Safari 打开上面的 **直接下载 VoiceCraft.ipa**，将文件保存到“文件”App。
+2. iPhone 连上 Wi-Fi，连接 **LocalDevVPN**。打开 **SideStore → My Apps → +**，选择 IPA，等待 SideStore 使用你的 Apple 账户签名并安装。
+3. 如提示信任开发者，进入 **设置 → 通用 → VPN 与设备管理 → 开发者 App**，信任安装时使用的账户；如提示开发者模式，进入 **设置 → 隐私与安全性 → 开发者模式**，按提示重启并确认。
+4. 打开 VoiceCraft，允许麦克风权限；Apple Speech 模式还需要语音识别权限。本地 Whisper 首次需要联网下载模型，准备完成后可使用缓存模型离线转录。
 
-需要 **iOS 17+**。IPA 未预先进行开发者签名，必须通过 SideStore 等工具重新签名后安装，不能直接点文件安装。免费 Apple 账户的签名有效期为 7 天，需要到期前 Refresh；SideStore 自身也要续签。通常最多同时安装 3 个开发签名 App（含 SideStore）；从 App Store 下载的 App 不占此名额。
+IPA 未预先进行开发者签名，必须通过 SideStore 等工具重新签名后安装，不能直接点文件安装。免费 Apple 账户的签名有效期为 7 天，需要到期前 Refresh；SideStore 自身也要续签。通常最多同时安装 3 个开发签名 App（含 SideStore）；从 App Store 下载的 App 不占此名额。
 
 若 SideStore 提示配对文件失效、缺失或找不到 UDID，请先用电脑上的 iloader 重新放入配对文件，再安装；详见 [官方配对文件修复教程](https://docs.sidestore.io/docs/advanced/pairing-file)。续签或升级时保留原 App，并沿用同一签名账户，避免卸载导致录音数据被删除。
 
-打包任务检查归档、arm64 架构、iPhoneOS 平台、IPA ZIP 完整性、Bundle ID 和权限说明，并随包提供 SHA-256 校验值。这些检查不代表已完成真机录音、Apple Speech 或 WhisperKit 推理测试，真机清单见 [docs/TESTING.md](docs/TESTING.md)。
+### 重新打包或下载新版本
+
+推送 iOS 代码到 main 会自动运行 [Build iPhone IPA](https://github.com/GuangzhiSu/VoiceCraft/actions/workflows/build-ipa.yml)，也可以在该页面点击 **Run workflow → main → Run workflow** 手动运行。成功后，[Publish iPhone download](https://github.com/GuangzhiSu/VoiceCraft/actions/workflows/publish-ipa.yml) 会校验成功的 main 构建及 IPA 校验值，并将 IPA 和 SHA-256 文件发布到对应的 [GitHub prerelease](https://github.com/GuangzhiSu/VoiceCraft/releases)。发布过程不需要上传 Apple 账户、证书或密码。
+
+Actions 运行页面也保留 **VoiceCraft-iPhone-IPA** artifact（30 天），该入口需要登录 GitHub；下载的外层 ZIP 必须先解压，取出 IPA。Release 的独立文件下载不受这 30 天的 artifact 保留期限影响。
+
+打包任务检查归档、arm64 架构、iPhoneOS 平台、IPA ZIP 完整性、Bundle ID 和权限说明。这些检查不代表已完成真机录音、Apple Speech 或 WhisperKit 推理测试，真机清单见 [docs/TESTING.md](docs/TESTING.md)。
 
 ## 在 Mac 上使用 Xcode 运行
 
