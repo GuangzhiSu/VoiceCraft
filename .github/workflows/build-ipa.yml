@@ -1,0 +1,137 @@
+name: Build iPhone IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/build-ipa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: iphone-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build VoiceCraft for SideStore
+    runs-on: macos-15
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Archive unsigned iPhone app
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xcodebuild archive \
+            -project ios/VoiceCraft.xcodeproj \
+            -scheme VoiceCraft \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -sdk iphoneos \
+            -archivePath "$PWD/build/VoiceCraft.xcarchive" \
+            -derivedDataPath "$PWD/build/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            2>&1 | tee build/xcodebuild.log
+
+      - name: Validate and package IPA
+        run: |
+          set -euo pipefail
+          APP="$PWD/build/VoiceCraft.xcarchive/Products/Applications/VoiceCraft.app"
+          test -d "$APP"
+          plutil -lint "$APP/Info.plist"
+          xcrun lipo -verify_arch arm64 "$APP/VoiceCraft"
+          xcrun vtool -show-build "$APP/VoiceCraft" | tee build/macho-platform.txt
+          grep -Eq 'platform[[:space:]]+IOS[[:space:]]*$' build/macho-platform.txt
+
+          mkdir -p build/package/Payload build/output
+          ditto "$APP" build/package/Payload/VoiceCraft.app
+          (
+            cd build/package
+            /usr/bin/zip -qry ../output/VoiceCraft.ipa Payload
+          )
+          python3 - <<'PY'
+          import plistlib
+          import zipfile
+
+          path = "build/output/VoiceCraft.ipa"
+          with zipfile.ZipFile(path) as ipa:
+              bad = ipa.testzip()
+              if bad is not None:
+                  raise SystemExit(f"Corrupt ZIP member: {bad}")
+              info = plistlib.loads(ipa.read("Payload/VoiceCraft.app/Info.plist"))
+              assert info["CFBundleIdentifier"] == "com.guangzhisu.VoiceCraft", info
+              assert info["CFBundleSupportedPlatforms"] == ["iPhoneOS"], info
+              assert info.get("NSMicrophoneUsageDescription"), "Missing microphone permission"
+              assert info.get("NSSpeechRecognitionUsageDescription"), "Missing speech permission"
+              executable = "Payload/VoiceCraft.app/" + info["CFBundleExecutable"]
+              assert executable in ipa.namelist(), "Missing executable"
+              print(f"Validated {path}: iPhoneOS, {info['MinimumOSVersion']}+, "
+                    f"version {info['CFBundleShortVersionString']}")
+          PY
+          (
+            cd build/output
+            shasum -a 256 VoiceCraft.ipa > VoiceCraft.ipa.sha256
+          )
+
+      - name: Upload iPhone installation package
+        id: ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceCraft-iPhone-IPA
+          path: |
+            build/output/VoiceCraft.ipa
+            build/output/VoiceCraft.ipa.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+      - name: Write download instructions
+        env:
+          ARTIFACT_URL: ${{ steps.ipa.outputs.artifact-url }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          {
+            echo '## VoiceCraft iPhone 安装包'
+            echo
+            echo "[下载 VoiceCraft-iPhone-IPA]($ARTIFACT_URL)"
+            echo
+            echo '1. 登录 GitHub，下载上面的 artifact ZIP 并解压，取出 VoiceCraft.ipa。'
+            echo '2. 将 IPA 保存到 iPhone 的“文件”App。'
+            echo '3. 连上 Wi-Fi，连接 LocalDevVPN；打开 SideStore → My Apps → +，选择 IPA。'
+            echo '4. 允许麦克风和语音识别权限；本地 Whisper 首次使用时需要联网下载模型。'
+            echo
+            echo '此包为 arm64 真机版本，需 iOS 17+；由 SideStore 在手机上重新签名。'
+            echo '免费 Apple 账户需要在 7 天到期前续签。'
+            echo '打包检查通过不代表已经完成真机录音及识别测试。'
+            echo
+            echo "Source commit: $COMMIT_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceCraft-IPA-build-diagnostics
+          path: |
+            build/xcodebuild.log
+            build/macho-platform.txt
+          if-no-files-found: ignore
+          retention-days: 7

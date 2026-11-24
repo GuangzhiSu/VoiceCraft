@@ -15,7 +15,24 @@
 
 这里的“录制说话人”指录制麦克风音频；本版本不识别人名、声纹或区分多位说话人。
 
-## 在 iPhone 上运行
+## Windows / 无 Mac：通过 SideStore 安装
+
+仓库提供 [Build iPhone IPA](../../actions/workflows/build-ipa.yml) 工作流，使用 GitHub 的 macOS runner 编译 **arm64 iPhone 真机版本**，不需要把 Apple 账户、证书或密码上传到 GitHub。
+
+1. 用浏览器登录 GitHub，打开仓库的 **Actions → Build iPhone IPA**。选择最近一次成功的运行；需要重新打包时，点击 **Run workflow → main → Run workflow**。推送 iOS 代码到 main 时也会自动打包。
+2. 在运行页面下方的 **Artifacts** 下载 **VoiceCraft-iPhone-IPA**（保留 30 天）。解压下载的 ZIP，取出 `VoiceCraft.ipa`；不要把外层 ZIP 当成 IPA 安装。
+3. 将 `VoiceCraft.ipa` 保存到 iPhone 的“文件”App。也可以直接用 iPhone Safari 登录 GitHub 下载并在“文件”中解压。
+4. iPhone 连上 Wi-Fi，连接 **LocalDevVPN**。打开 **SideStore → My Apps → +**，选择 IPA，等待 SideStore 使用你的 Apple 账户签名并安装。
+5. 如提示信任开发者，进入 **设置 → 通用 → VPN 与设备管理 → 开发者 App**，信任安装时使用的账户；如提示开发者模式，进入 **设置 → 隐私与安全性 → 开发者模式**，按提示重启并确认。
+6. 打开 VoiceCraft，允许麦克风权限；Apple Speech 模式还需要语音识别权限。本地 Whisper 首次需要联网下载模型，准备完成后可使用缓存模型离线转录。
+
+需要 **iOS 17+**。IPA 未预先进行开发者签名，必须通过 SideStore 等工具重新签名后安装，不能直接点文件安装。免费 Apple 账户的签名有效期为 7 天，需要到期前 Refresh；SideStore 自身也要续签。通常最多同时安装 3 个开发签名 App（含 SideStore）；从 App Store 下载的 App 不占此名额。
+
+若 SideStore 提示配对文件失效、缺失或找不到 UDID，请先用电脑上的 iloader 重新放入配对文件，再安装；详见 [官方配对文件修复教程](https://docs.sidestore.io/docs/advanced/pairing-file)。续签或升级时保留原 App，并沿用同一签名账户，避免卸载导致录音数据被删除。
+
+打包任务检查归档、arm64 架构、iPhoneOS 平台、IPA ZIP 完整性、Bundle ID 和权限说明，并随包提供 SHA-256 校验值。这些检查不代表已完成真机录音、Apple Speech 或 WhisperKit 推理测试，真机清单见 [docs/TESTING.md](docs/TESTING.md)。
+
+## 在 Mac 上使用 Xcode 运行
 
 需要 **Mac、Xcode 16+、iOS 17+ 的 iPhone**。Whisper 建议使用较新的 Apple Silicon iPhone；性能和识别准确率需要在目标手机上实测。模拟器可用于界面和单元测试，录音、Apple Speech 和 Core ML 推理请以真机为准。
 
