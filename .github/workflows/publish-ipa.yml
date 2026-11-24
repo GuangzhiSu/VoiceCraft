@@ -1,0 +1,95 @@
+name: Publish iPhone download
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful Build iPhone IPA run ID
+        type: string
+        default: '45336225279'
+        required: true
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-ipa.yml']
+  workflow_run:
+    workflows: ['Build iPhone IPA']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    concurrency:
+      group: publish-ipa-${{ github.event.workflow_run.id || inputs.run_id || '45336225279' }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id || '45336225279' }}
+    steps:
+      - name: Verify source build
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/$GH_REPO/actions/runs/$RUN_ID" > run.json
+          python3 - <<'PY'
+          import json, os
+          with open("run.json") as file:
+              run = json.load(file)
+          assert run["name"] == "Build iPhone IPA", "Unexpected workflow"
+          assert run["head_branch"] == "main", "Only main builds can be published"
+          assert run["status"] == "completed" and run["conclusion"] == "success"
+          assert run["head_repository"]["full_name"] == os.environ["GH_REPO"]
+          with open(os.environ["GITHUB_ENV"], "a") as env:
+              env.write("SOURCE_SHA=" + run["head_sha"] + "\n")
+          PY
+
+      - name: Download and verify installation package
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download "$RUN_ID" --name VoiceCraft-iPhone-IPA --dir package
+          (
+            cd package
+            shasum -a 256 -c VoiceCraft.ipa.sha256
+          )
+          python3 - <<'PY'
+          import plistlib, zipfile
+          with zipfile.ZipFile("package/VoiceCraft.ipa") as ipa:
+              assert ipa.testzip() is None
+              info = plistlib.loads(ipa.read("Payload/VoiceCraft.app/Info.plist"))
+              assert info["CFBundleIdentifier"] == "com.guangzhisu.VoiceCraft"
+              assert info["CFBundleSupportedPlatforms"] == ["iPhoneOS"]
+          PY
+
+      - name: Publish SideStore download
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="sideload-$RUN_ID"
+          cat > notes.md <<'NOTES'
+          iPhone 真机 IPA，适用于 iOS 17+。下载 **VoiceCraft.ipa**，保存到 iPhone 的“文件”App，然后打开 SideStore → My Apps → + 导入安装。
+
+          此包需由 SideStore 重新签名。首次使用本地 Whisper 时需要联网下载模型。真机录音与识别效果仍需安装后测试。
+          NOTES
+          echo >> notes.md
+          echo "Verified build: https://github.com/$GH_REPO/actions/runs/$RUN_ID" >> notes.md
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --target "$SOURCE_SHA" --prerelease \
+              --title "VoiceCraft iPhone — build $RUN_ID" --notes-file notes.md
+          fi
+          gh release upload "$TAG" package/VoiceCraft.ipa package/VoiceCraft.ipa.sha256 --clobber
+          {
+            echo '## iPhone 下载'
+            echo "[直接下载 VoiceCraft.ipa](https://github.com/$GH_REPO/releases/download/$TAG/VoiceCraft.ipa)"
+            echo "[Release 页面](https://github.com/$GH_REPO/releases/tag/$TAG)"
+          } >> "$GITHUB_STEP_SUMMARY"
